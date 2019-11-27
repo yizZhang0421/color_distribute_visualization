@@ -16,7 +16,7 @@ for i in range(8):
     color_chart.append(data)
     start_x-=40*gap_x
     start_y+=gap_y
-cv2.imwrite('test.jpg', img)
+#cv2.imwrite('test.jpg', img)
 
 import numpy as np
 chart=np.zeros([8*25, 40*20, 3], dtype=np.uint8)
@@ -30,8 +30,19 @@ for i in range(8):
         start_c+=gap_c
     start_c-=40*gap_c
     start_r+=gap_r
-cv2.imwrite('test.jpg', chart)
+#cv2.imwrite('test.jpg', chart)
 
-cv2.imshow('test', img)
+cv2.imshow('test', chart)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+'''
+hex_color=[[(j[0],j[1],j[2]) for j in i] for i in color_chart]
+hex_color=[[hex(j[2]).split('x')[-1].zfill(2)+hex(j[1]).split('x')[-1].zfill(2)+hex(j[0]).split('x')[-1].zfill(2) for j in i] for i in color_chart]
+for i in hex_color:
+    tmp='['
+    for j in i:
+        tmp+='"'+j+'",'
+    tmp=tmp[:-1]+']'
+    print(tmp)
+'''
