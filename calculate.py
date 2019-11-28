@@ -1,4 +1,5 @@
-chart = [[(223, 223, 240),
+chart = [[(255, 255, 255),
+          (223, 223, 240),
           (221, 223, 241),
           (219, 223, 242),
           (216, 223, 243),
@@ -38,7 +39,8 @@ chart = [[(223, 223, 240),
           (227, 223, 237),
           (226, 223, 239),
           (224, 223, 239)],
-         [(183, 183, 250),
+         [(219, 219, 219),
+          (183, 183, 250),
           (177, 183, 252),
           (169, 183, 253),
           (160, 184, 253),
@@ -78,7 +80,8 @@ chart = [[(223, 223, 240),
           (202, 184, 243),
           (196, 183, 246),
           (189, 183, 248)],
-         [(152, 149, 237),
+         [(182, 182, 182),
+          (152, 149, 237),
           (144, 149, 239),
           (123, 143, 253),
           (107, 145, 251),
@@ -118,7 +121,8 @@ chart = [[(223, 223, 240),
           (180, 144, 241),
           (170, 150, 232),
           (160, 150, 235)],
-         [(118, 106, 235),
+         [(146, 146, 146),
+          (118, 106, 235),
           (105, 106, 236),
           (88, 108, 236),
           (47, 104, 244),
@@ -158,7 +162,8 @@ chart = [[(223, 223, 240),
           (155, 118, 212),
           (144, 107, 229),
           (131, 106, 232)],
-         [(92, 63, 218),
+         [(109, 109, 109),
+          (92, 63, 218),
           (74, 65, 219),
           (53, 68, 218),
           (0, 72, 216),
@@ -198,7 +203,8 @@ chart = [[(223, 223, 240),
           (133, 79, 197),
           (121, 65, 212),
           (106, 64, 215)],
-         [(71, 21, 188),
+         [(73, 73, 73),
+          (71, 21, 188),
           (51, 26, 188),
           (32, 33, 186),
           (0, 50, 178),
@@ -238,7 +244,8 @@ chart = [[(223, 223, 240),
           (108, 62, 157),
           (97, 60, 161),
           (87, 59, 164)],
-         [(55, 22, 139),
+         [(36, 36, 36),
+          (55, 22, 139),
           (43, 24, 139),
           (22, 0, 148),
           (16, 34, 136),
@@ -278,7 +285,8 @@ chart = [[(223, 223, 240),
           (87, 29, 130),
           (77, 26, 134),
           (66, 23, 137)],
-         [(46, 14, 97),
+         [(0, 0, 0),
+          (46, 14, 97),
           (37, 14, 98),
           (28, 16, 98),
           (26, 30, 87),
@@ -318,22 +326,41 @@ chart = [[(223, 223, 240),
           (65, 19, 90),
           (59, 18, 92),
           (53, 16, 94)]]
+
+search_dict=dict()
+for i in range(len(chart)):
+    for j in range(len(chart[i])):
+        chart[i][j]
+        key=(((chart[i][j][0]<<8)+chart[i][j][1])<<8)+chart[i][j][2]
+        value=(i, j)
+        search_dict[key]=value
+
 import numpy as np
-import cv2, math
-img=cv2.imread('ice.png')
-table=np.zeros([8, 40], dtype=np.int64)
+chart=np.array(chart)
+from scipy.spatial import KDTree
+x=np.ravel(chart[:,:,0])
+y=np.ravel(chart[:,:,1])
+z=np.ravel(chart[:,:,2])
+tree = KDTree(list(zip(x, y, z)))
+
+import cv2
+img=cv2.imread('colorful.jfif')
+limit=100
+if max(img.shape[0], img.shape[1])>limit:
+    if img.shape[0]>=img.shape[1]:
+        h=limit
+        w=int(round(img.shape[1]*limit/img.shape[0]))
+    else:
+        w=limit
+        h=int(round(img.shape[0]*limit/img.shape[1]))
+    img = cv2.resize(img, (w, h), interpolation=cv2.INTER_CUBIC)
+
+table=np.zeros([len(chart), len(chart[0])], dtype=np.int64)
 for r in img:
     for c in r:
-        nearest=math.sqrt(255**2+255**2+255**2)
-        nearest_i=0
-        nearest_j=0
-        for i in range(8):
-            for j in range(40):
-                distance=math.sqrt((c[0]-chart[i][j][0])**2+(c[1]-chart[i][j][1])**2+(c[2]-chart[i][j][2])**2)
-                if distance<nearest:
-                    nearest=distance
-                    nearest_i=i
-                    nearest_j=j
+        distance, index=tree.query(c)
+        searchered=tree.data[index]
+        nearest_i, nearest_j=search_dict[(((searchered[0]<<8)+searchered[1])<<8)+searchered[2]]
         table[nearest_i][nearest_j]+=1
 
 html=open('html_show/demos/barchart_template.html', 'r').read()
